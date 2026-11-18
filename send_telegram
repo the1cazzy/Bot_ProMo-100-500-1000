@@ -1,0 +1,52 @@
+import os
+import requests
+
+BOT_TOKEN = os.environ.get("BOT_TOKEN")
+CHAT_ID = os.environ.get("CHAT_ID")
+IMAGE_PATH = "491527.jpg"
+
+CAPTION_TEXT = """🧭✨ สิทธิประโยชน์ที่สมาชิก COMPASS จะได้รับ
+
+เพราะเราเชื่อว่าการเทรดที่ดี ต้องมีทั้งแนวทาง กลยุทธ์ และการบริหารความเสี่ยงที่เหมาะสม
+
+📊 เลือกระดับ Signal Room ให้เหมาะกับพอร์ตของคุณ
+
+🔹 COMPASS START — 100 USD
+เทรด M5 เน้นการเทรดระยะสั้น
+
+🔹 COMPASS PRO — 500 USD
+จุดเข้าตามแผน เป้าหมาย 1,000 จุด
+
+🔹 COMPASS ELITE — 1,000 USD
+จุดเข้าตามโครงสร้างตลาด พร้อมแนวทางวางแผนการเทรด
+
+👑 COMPASS — เข็มทิศเทรดเดอร์
+เติบโตไปด้วยกัน เรียนรู้และพัฒนาทักษะอย่างเป็นระบบ
+
+📩 สนใจเข้าร่วม ติดต่อสอบถามรายละเอียดเพิ่มเติมกับ Admin ได้เลย
+
+⚠️ เงื่อนไขเป็นไปตามที่บริษัทกำหนด
+การลงทุนมีความเสี่ยง ผู้ลงทุนควรศึกษาข้อมูลและทำความเข้าใจก่อนตัดสินใจ ผลกำไรไม่สามารถรับประกันได้"""
+
+
+def send_telegram_photo():
+  if not BOT_TOKEN or not CHAT_ID:
+    print("❌ ไม่พบค่า BOT_TOKEN หรือ CHAT_ID")
+    return
+
+  url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendPhoto"
+
+  with open(IMAGE_PATH, "rb") as image_file:
+    files = {"photo": image_file}
+    data = {"chat_id": CHAT_ID, "caption": CAPTION_TEXT}
+    response = requests.post(url, files=files, data=data)
+    result = response.json()
+
+    if result.get("ok"):
+      print("✅ ส่งรูปภาพและข้อความเข้า Telegram สำเร็จ!")
+    else:
+      print(f"❌ ส่งไม่สำเร็จ: {result.get('description')}")
+
+
+if __name__ == "__main__":
+  send_telegram_photo()
