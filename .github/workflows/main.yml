@@ -2,7 +2,7 @@ name: Auto Send Telegram
 
 on:
   schedule:
-    - cron: '0 23 * * *'
+    - cron: '0 11 * * *'  # 11:00 UTC = 18:00 น. (6 โมงเย็น) เวลาไทย
   workflow_dispatch:
 
 jobs:
