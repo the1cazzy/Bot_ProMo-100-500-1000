@@ -1,8 +1,11 @@
 import os
 import requests
 
-BOT_TOKEN = os.environ.get("BOT_TOKEN")
-CHAT_ID = os.environ.get("CHAT_ID")
+# ดึงค่าจาก Secrets ตามชื่อตัวแปรของคุณ
+TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
+raw_chat_ids = os.environ.get("TELEGRAM_CHAT_ID", "")
+CHAT_IDS = [cid.strip() for cid in raw_chat_ids.split(",") if cid.strip()]
+
 IMAGE_PATH = "491527.jpg"
 
 CAPTION_TEXT = """🧭✨ สิทธิประโยชน์ที่สมาชิก COMPASS จะได้รับ
@@ -30,22 +33,32 @@ CAPTION_TEXT = """🧭✨ สิทธิประโยชน์ที่สม
 
 
 def send_telegram_photo():
-  if not BOT_TOKEN or not CHAT_ID:
-    print("❌ ไม่พบค่า BOT_TOKEN หรือ CHAT_ID")
+  if not TELEGRAM_TOKEN or not CHAT_IDS:
+    print("❌ ไม่พบค่า TELEGRAM_TOKEN หรือ TELEGRAM_CHAT_ID ใน Secrets")
     return
 
-  url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendPhoto"
+  url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendPhoto"
 
-  with open(IMAGE_PATH, "rb") as image_file:
-    files = {"photo": image_file}
-    data = {"chat_id": CHAT_ID, "caption": CAPTION_TEXT}
-    response = requests.post(url, files=files, data=data)
-    result = response.json()
+  try:
+    with open(IMAGE_PATH, "rb") as image_file:
+      for chat_id in CHAT_IDS:
+        # รีเซ็ตตำแหน่งการอ่านไฟล์รูปใหม่ทุกครั้งที่วนลูปส่งห้องถัดไป
+        image_file.seek(0)
 
-    if result.get("ok"):
-      print("✅ ส่งรูปภาพและข้อความเข้า Telegram สำเร็จ!")
-    else:
-      print(f"❌ ส่งไม่สำเร็จ: {result.get('description')}")
+        files = {"photo": image_file}
+        data = {"chat_id": chat_id, "caption": CAPTION_TEXT}
+        response = requests.post(url, files=files, data=data)
+        result = response.json()
+
+        if result.get("ok"):
+          print(f"✅ ส่งรูปภาพเข้าห้อง {chat_id} สำเร็จ!")
+        else:
+          print(f"❌ ส่งเข้าห้อง {chat_id} ไม่สำเร็จ: {result.get('description')}")
+
+  except FileNotFoundError:
+    print(f"❌ ไม่พบไฟล์รูปภาพ '{IMAGE_PATH}' กรุณาอัปโหลดไฟล์ขึ้น GitHub ด้วย")
+  except Exception as e:
+    print(f"❌ เกิดข้อผิดพลาด: {e}")
 
 
 if __name__ == "__main__":
